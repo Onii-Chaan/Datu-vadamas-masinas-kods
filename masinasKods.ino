@@ -1,42 +1,61 @@
-#define mainMotorPlus D11
-#define mainMotorMinus D10
-#define turnMotorPlus D9
-#define turnMotorMinus D6
-#define redDiodeOne D5
-#define redDiodeTwo D4
-#define whiteDiodeOne D3
-#define whiteDiodeTwo D2
-#define LMVcc D8
+#define mainMotorPlus 11
+#define mainMotorMinus 10
+#define turnMotorPlus 9
+#define turnMotorMinus 6
+#define redDiodeOne 5
+#define redDiodeTwo 4
+#define whiteDiodeOne 3
+#define whiteDiodeTwo 2
+#define LMVcc 8
 #define MPUInt D7
 #define MPUScl A7
 #define MPUSda A6
+#define voltagePin A5
 
-class BTdata {
-  private:
+class audioVcc{//klase , kas atbild par audio Vcc iedarbināšanu
+  public:
+
+  bool vccState;//nosaka vai audio pins ir vaļā vai ciet
+
+  void setup(){
+    pinMode(LMVcc, OUTPUT);
+  }
+  void loop(){
+    if(vccState == true){
+      digitalWrite(LMVcc, HIGH);
+    } else {
+      digitalWrite(LMVcc, LOW);
+    }
+  }
+
+};
+
+class BTdata {//bluetooth datu saņemšanas klase
+  private://mainīgie, kas nepieciešami, lai sadalītu datus
       int countDataSwCase;//recvWithStartEndMarkers switch operatora skaitītājs
-      static boolean recvInProgress = false;
-      static byte ndx = 0;
+      bool recvInProgress = false;
+      byte ndx = 0;
       char startMarker = '<';
       char endMarker = '>';
       char rc;//šajā mainīgajā tiek saglabāts katrs ienākošais baits
       const byte numChars = 32;
-      char receivedChars[numChars];
-      int onValue;
-      int mode;
+      char receivedChars[32];
+      int onValue;//pirmais saņemtais cipars
+      int mode;//otrais saņemtais cipars
 
   public:
-    int activeValues[4];
+    byte activeValues[5];//šajā sarakstā glabājas apstrādātie dati, kuri tiek izpildīti un izmantoti turpmāk visur
+    byte prevActiveValues[5];//iepriekšējās activeValues masīva dati
     //active values paskaidrojums: {0,0,0,0}
     /*
     0. - mašīna brauc uz priekšu/atpakaļ (vērtības 0,1,2, kur 0 stāv, 1 uz priekšu, 2 atpakaļ)
     1. - mašīna pagriežas pa labi/pa kreisi (vērtības 0, 1, 2, kur 0 sākuma stāvoklis, 1 pa kreisi, 2 pa labi)
-    2. - deg diodes (vērtības 0, 1, 2, kur 0 ir izslēgtas abas gaismas, 1, priekšējās, 2, aizmugurējās, 3, kopā abas puses)
+    2. - deg diodes (vērtības 0, 1, 2 kur 0 ir izslēgtas abas gaismas, 1, priekšējās, 2, aizmugurējās)
     3. - tiek atskaņota signalizācija vai ieraksts (vērtības 0,1,2, kur 0 nekas netiek atskaņots, 1, tiek atskaņots ieraksts, 2 tiek atskaņota signalizācija)
     */ 
 
     void setup() {
       Serial.begin(9600);
-      pinMode(LMVcc OUTPUT);
     }
 
     void loop() {
@@ -57,15 +76,12 @@ class BTdata {
                   ndx = 0;
                 }
                 break;
-              
-              default:
-                break;
             }
             if (ndx >= numChars) {
               ndx = numChars - 1;
-            }
+            }   
           } else {
-            receivedChars[sizeof(receivedChars)] = '\0'; // terminate the string, svarīga koda rindiņa, kur iepriekš [] iekšā bija ndx. Ndx patstāvīgi mainās, tāpēc bija nepieciešams ievietot citu garuma vērtību
+            receivedChars[sizeof(receivedChars)+1] = '\0'; // terminate the string, svarīga koda rindiņa, kur iepriekš [] iekšā bija ndx. Ndx patstāvīgi mainās, tāpēc bija nepieciešams ievietot citu garuma vērtību
             recvInProgress = false;
             setNewData();
           }
@@ -81,30 +97,14 @@ class BTdata {
     for ( int i = 0; i < 3;  ++i ) { //notīra receivedChars masīvu
       receivedChars[i] = (char)0; 
     }
-    switch(mode){
-        case 1:
-        break;
-        case 2:
-        break;
-        case 3:
-        break;
-        case 4:
-        break;
-        case 5:
-        break;
-        case 6:
-        break;
-        case 7:
-        break;
-        case 8:
-        break;
-        default:
-        break;
-    }
+      for(int i = 0; i<5; i++){//saliek iepriekšējos datus iepriekšējo datu masīvā
+        prevActiveValues[i] = activeValues[i];
+      }
+      activeValues[onValue] = mode;//jaunie dati tiek ievietoti masīvā 
     }
 };
 
-class carLights {
+class carLights {//klase, kas atbild par mašīnītes gaismas iedarbināšanu
   public:
     void setup() {
       pinMode(redDiodeOne, OUTPUT);
@@ -114,11 +114,46 @@ class carLights {
     }
 
     void loop() {
+      
+    }
 
+    void turnLights(byte lightState){
+      switch (lightState)
+      {
+      case 0:
+        digitalWrite(redDiodeOne, LOW);
+        digitalWrite(redDiodeTwo, LOW);
+        digitalWrite(whiteDiodeOne, LOW);
+        digitalWrite(whiteDiodeTwo, LOW);
+      break;
+      case 1:
+        digitalWrite(redDiodeOne, HIGH);
+        digitalWrite(redDiodeTwo, HIGH);
+      break;
+      case 2:
+        digitalWrite(whiteDiodeOne, HIGH);
+        digitalWrite(whiteDiodeTwo, HIGH);
+      break;
+      case 3://Mašīnītei ieslēdzoties pašā sākumā tā nomirgo
+      bool onOffStart = false;
+      for(int i = 0; i<=2; i++){
+        if(i%2 == 0){//katra otrā vērtība ir negatīva un tas ļauj mašīnītei nomirgot
+          onOffStart = true;
+        } else {
+          onOffStart = false;
+        }
+          digitalWrite(redDiodeOne, onOffStart);
+          digitalWrite(redDiodeTwo, onOffStart);
+          digitalWrite(whiteDiodeOne, onOffStart);
+          digitalWrite(whiteDiodeTwo, onOffStart);
+          delay(200);
+        }
+      break;
+      }
     }
 };
 
-class carControl {
+class carControl {//klase , kas atbild par mašīnītes motoru darbināšanu
   public:
     void setup() {
       pinMode(mainMotorPlus, OUTPUT);
@@ -130,58 +165,162 @@ class carControl {
     void loop() {
 
     }
+
+    void driveCar(byte mainMotor, byte turnMotor, byte prevTurnMotorVal){//motoru darbināšanas funkcija
+      switch (mainMotor)
+      {
+      case 0:
+        analogWrite(mainMotorMinus, 0);
+        analogWrite(mainMotorPlus, 0);
+      break;
+      case 1:
+        analogWrite(mainMotorPlus, 255);
+        analogWrite(mainMotorMinus, 0);
+      break;
+      case 2:
+        analogWrite(mainMotorMinus, 255);
+        analogWrite(mainMotorPlus, 0);
+      break;
+      }
+      switch (turnMotor)
+      {
+      case 0://jāstāv vidū
+        if(prevTurnMotorVal == 1){
+          turnFromLeftToMid();
+        } else if (prevTurnMotorVal == 2){
+          turnFromRightToMid();
+        }
+        analogWrite(turnMotorPlus, 0);
+        analogWrite(turnMotorMinus, 0);
+      break;
+      case 1://kreisi
+        analogWrite(turnMotorPlus, 0);
+        analogWrite(turnMotorMinus, 255);
+      break;
+      case 2://labi
+        analogWrite(turnMotorPlus, 255);
+        analogWrite(turnMotorMinus, 0);
+      break;
+      }
+    }
+      void turnFromLeftToMid(){//atgriež pagrieziena motoru uz vidu
+        analogWrite(turnMotorPlus, 255);
+        analogWrite(turnMotorMinus, 0);
+        delay(100);
+        analogWrite(turnMotorPlus, 0);
+        analogWrite(turnMotorMinus, 0);
+      }
+      void turnFromRightToMid(){//atgriež pagrieziena motoru uz vidu 
+        analogWrite(turnMotorPlus, 0);
+        analogWrite(turnMotorMinus, 255);
+        delay(100);
+        analogWrite(turnMotorPlus, 0);
+        analogWrite(turnMotorMinus, 0);
+      }
 };
 
-class gyroData {
+class gyroData {//sprieguma nolasīšanas un žiroskopa klase
   public:
-    void setup() {
+    int deltaAnl[3];
+    unsigned long oldTimeInt = millis();
 
+    void setup() {
+      pinMode(voltagePin, INPUT);
+      pinMode(A2, INPUT);
     }
 
     void loop() {
-
+      
     }
+
+    byte readAcc(){//šo funkciju ir jāpārveido atbilstoši žiroskopam, bet princips paliek tas pats
+      if(millis()-oldTimeInt >= 1000){
+        oldTimeInt = millis();
+        deltaAnl[2] = deltaAnl[1];
+        deltaAnl[1] = deltaAnl[0];
+        deltaAnl[0] = analogRead(A2);
+        for(int i = 2; i>0; i--){
+          if(deltaAnl[i-1]-deltaAnl[i]>500){//ja accelerometram pirmās vērtības ir lielas, tad salīdzināšana ar citām šūnām neizdosies, jo tās sākumā ir 0
+            Serial.println("<!>");
+            return 2;
+          }
+        }
+      }
+      return 0;
+    }
+
+    byte readVoltage(){//nolasa baterijas spriegumu
+      return map(analogRead(A2), 777/*analogā vērtība no sprieguma dalītāja, lai 4,5V būtu nulle*/, 1023, 0, 100);
+    }
+
 };
 
-
+BTdata BTdata;//tiek inicializētas klases
+carLights carLights;
+carControl carControl;
+gyroData gyroData;
+audioVcc audioVcc;
 
 void setup() {
-
+  BTdata.setup();
+  carLights.setup();
+  carControl.setup();
+  gyroData.setup();
 }
 
 void loop() {
-
+  BTdata.loop();
+  carControl.driveCar(BTdata.activeValues[0], BTdata.activeValues[1], BTdata.prevActiveValues[1]);//iedarbina mašīnītes motorus
+  BTdata.prevActiveValues[1] = 0;//seto iepriekšējo pagrieziena motora vērtību uz nulli, lai pagrieziens atpakaļ izpildītos tikai vienreiz
+  carLights.turnLights(BTdata.activeValues[2]);//mašīnītes gaismas
+  if(BTdata.activeValues[2] == 3){//sākumā gaismiņas iemirgojas un lai tas tā nebūtu līdz nākamajai datu iesūtīšanai, par to atbildīgā vērtība tiek mainīta šeit
+    BTdata.activeValues[2] = 1;
+  }
+  if(gyroData.readAcc()>0 || BTdata.activeValues[3]>0){//iedarbina signalizāciju, ja ir atbilstoši accelerometra lasījumi vai arī tiek manuāli iesūtīta
+    audioVcc.vccState = true;
+    BTdata.activeValues[3] = 1;
+  } else if(BTdata.activeValues[3] == 0){
+    audioVcc.vccState = false;
+  }
+  if(BTdata.activeValues[4] == 1){//izsūta datus , ja tie tiek pieprasīti
+    BTdata.activeValues[4] = 0;
+    if(gyroData.readVoltage()>=100){
+      Serial.println("<100>");
+    } else if (gyroData.readVoltage()>=10){
+      Serial.print("<0");
+      Serial.print(gyroData.readVoltage());
+      Serial.println(">");
+    } else if (gyroData.readVoltage()<10){
+      Serial.print("<00");
+      Serial.println(gyroData.readVoltage());
+      Serial.println(">");
+    }
+  }
+  audioVcc.loop();
 }
 
 /*
 
-Datu vadāmās mašīnītes darbības
-1. Tiek saņemti dati no telefona caur rx un tie apstrādāti
-2. Mašīnīte brauc visos četros virzienos
-3. Mašīnīte apstājas braukt uz kādu konkrēto pusi kad tiek saņemts stop simbols
-4. Mašīnīte nevar braukt uz abām pusēm vienlaicīgi
-5. Mašīnīte beidz atskaņot ierakstu kad tiek iesūtītas ieraksta apstāšanās simbols
-6. Mašīnītei ieslēdzoties divreiz iemirgojas un deg priekšējās un aizmugurējās diodes
-7. Diožu stāvokli var mainīt
-Realizācija
 <[0 vai 1, on vai off, viencipara][kurai daļai jāstrādā, viencipara]>
-<00> //mašīnīte divreiz pamirgo ar lukturiem norādot, ka ir savienojums ar serveri
-<11> //mašīnīte brauc uz priekšu
-<12> //mašīnīte brauc atpakaļ
-<13>//mašīnīte pagriežās pa kreisi
-<14>//mašīnīte pagriežās pa labi
-<15>//tiek ieslēgtas priekšējās gaismas
-<16>//tiek ieslēgtas aizmugurējās gaismas
-<17>//tiek atskaņota signalizācija un mirgo gaismas
-<08>//tiek pieprasīti dati no mašīnītes (optional)
+////////////////<00> //mašīnīte divreiz pamirgo ar lukturiem norādot, ka ir savienojums ar serveri//////////////////
+<01> //mašīnīte brauc uz priekšu
+<02> //mašīnīte brauc atpakaļ
+<00> //mašīnīte stāv
+
+<10> //mašīnīte atgriežas sākuma stāvoklī>
+<11>//mašīnīte pagriežās pa kreisi
+<12>//mašīnīte pagriežās pa labi
+
+<20>// tiek izslēgtas abas gaismas
+<21>//tiek ieslēgtas priekšējās gaismas
+<22>//tiek ieslēgtas aizmugurējās gaismas
 
 
+<30>//nekas netiek atskaņots
+<31>//tiek atskaņota signalizācija
 
 
-
-
-
-
+<41>//tiek pieprasīti dati no mašīnītes (optional)
 
 
 */
