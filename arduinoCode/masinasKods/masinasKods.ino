@@ -5,12 +5,12 @@
 #define redDiodeOne 5
 #define redDiodeTwo 4
 #define whiteDiodeOne 3
-#define whiteDiodeTwo 2
+#define whiteDiodeTwo 7
 #define LMVcc 8
-#define MPUInt D7
-#define MPUScl A7
-#define MPUSda A6
-#define voltagePin A5
+#define MPUInt 2
+#define MPUScl A5
+#define MPUSda A4
+#define voltagePin A3
 
 class audioVcc{//klase , kas atbild par audio Vcc iedarbināšanu
   public:
@@ -170,16 +170,16 @@ class carControl {//klase , kas atbild par mašīnītes motoru darbināšanu
       switch (mainMotor)
       {
       case 0:
-        analogWrite(mainMotorMinus, 0);
-        analogWrite(mainMotorPlus, 0);
+        digitalWrite(mainMotorMinus, LOW);
+        digitalWrite(mainMotorPlus, LOW);
       break;
       case 1:
-        analogWrite(mainMotorPlus, 255);
-        analogWrite(mainMotorMinus, 0);
+        digitalWrite(mainMotorPlus, HIGH);
+        digitalWrite(mainMotorMinus, LOW);
       break;
       case 2:
-        analogWrite(mainMotorMinus, 255);
-        analogWrite(mainMotorPlus, 0);
+        digitalWrite(mainMotorMinus, HIGH);
+        digitalWrite(mainMotorPlus, LOW);
       break;
       }
       switch (turnMotor)
@@ -190,32 +190,32 @@ class carControl {//klase , kas atbild par mašīnītes motoru darbināšanu
         } else if (prevTurnMotorVal == 2){
           turnFromRightToMid();
         }
-        analogWrite(turnMotorPlus, 0);
-        analogWrite(turnMotorMinus, 0);
+        digitalWrite(turnMotorPlus, LOW);
+        digitalWrite(turnMotorMinus, LOW);
       break;
       case 1://kreisi
-        analogWrite(turnMotorPlus, 0);
-        analogWrite(turnMotorMinus, 255);
+        digitalWrite(turnMotorPlus, LOW);
+        digitalWrite(turnMotorMinus, HIGH);
       break;
       case 2://labi
-        analogWrite(turnMotorPlus, 255);
-        analogWrite(turnMotorMinus, 0);
+        digitalWrite(turnMotorPlus, HIGH);
+        digitalWrite(turnMotorMinus, LOW);
       break;
       }
     }
       void turnFromLeftToMid(){//atgriež pagrieziena motoru uz vidu
-        analogWrite(turnMotorPlus, 255);
-        analogWrite(turnMotorMinus, 0);
+        digitalWrite(turnMotorPlus, HIGH);
+        digitalWrite(turnMotorMinus, LOW);
         delay(100);
-        analogWrite(turnMotorPlus, 0);
-        analogWrite(turnMotorMinus, 0);
+        digitalWrite(turnMotorPlus, LOW);
+        digitalWrite(turnMotorMinus, LOW);
       }
       void turnFromRightToMid(){//atgriež pagrieziena motoru uz vidu 
-        analogWrite(turnMotorPlus, 0);
-        analogWrite(turnMotorMinus, 255);
+        digitalWrite(turnMotorPlus, LOW);
+        digitalWrite(turnMotorMinus, HIGH);
         delay(100);
-        analogWrite(turnMotorPlus, 0);
-        analogWrite(turnMotorMinus, 0);
+        digitalWrite(turnMotorPlus, LOW);
+        digitalWrite(turnMotorMinus, LOW);
       }
 };
 
@@ -226,7 +226,6 @@ class gyroData {//sprieguma nolasīšanas un žiroskopa klase
 
     void setup() {
       pinMode(voltagePin, INPUT);
-      pinMode(A2, INPUT);
     }
 
     void loop() {
@@ -238,7 +237,7 @@ class gyroData {//sprieguma nolasīšanas un žiroskopa klase
         oldTimeInt = millis();
         deltaAnl[2] = deltaAnl[1];
         deltaAnl[1] = deltaAnl[0];
-        deltaAnl[0] = analogRead(A2);
+        deltaAnl[0] = analogRead(voltagePin);
         for(int i = 2; i>0; i--){
           if(deltaAnl[i-1]-deltaAnl[i]>500){//ja accelerometram pirmās vērtības ir lielas, tad salīdzināšana ar citām šūnām neizdosies, jo tās sākumā ir 0
             Serial.println("<!>");
@@ -250,7 +249,7 @@ class gyroData {//sprieguma nolasīšanas un žiroskopa klase
     }
 
     byte readVoltage(){//nolasa baterijas spriegumu
-      return map(analogRead(A2), 777/*analogā vērtība no sprieguma dalītāja, lai 4,5V būtu nulle*/, 1023, 0, 100);
+      return map(analogRead(voltagePin), 777/*analogā vērtība no sprieguma dalītāja, lai 4,5V būtu nulle*/, 1023, 0, 100);
     }
 
 };
@@ -322,5 +321,7 @@ void loop() {
 
 <41>//tiek pieprasīti dati no mašīnītes (optional)
 
+
+Ja no mašīnas MPU paatrinājums Z asij paliek lielāks par 26k, tad jāceļ trauksme Serial.write((uint8_t)(az >> 8)); Serial.write((uint8_t)(az & 0xFF));
 
 */
