@@ -1,5 +1,21 @@
 import keyboard
+import socket
+
 print("start")
+
+listensocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+Port = 8000
+maxConnections = 1
+IP = socket.gethostname()
+
+listensocket.bind((socket.gethostname(), Port))
+
+listensocket.listen(maxConnections)
+print("Server started at " + str(socket.gethostbyname(IP)) + " on port " + str(Port))
+
+clientsocket, adress = listensocket.accept()
+print(f"New connection made! {adress}")
+#recMessage = clientsocket.recv(1024).decode()
 
 keyCheck = [0] * 9 #iestata masīva garumu uz 9, jo kopā tiks izmantoti tikai 9 taustiņi, šis ir nepieciešams, lai taustiņš tiktu nospiests tikai vienreiz un tā vērtība netiktu atkārtota mūžīgi
 """
@@ -14,90 +30,97 @@ keyCheck atšifrējums:
 7 - F izslēgt gaismas
 8 - C saņemt datus
 
-
 0 - izslēgts
 1 - ieslēgts
 """
 
+
+#listensocket.send() atliek skriptu uzlabot, lai tas nosūtītu datus
+#ja sokets saņem datus, tad saņemtos datus izvada uz ekrāna tikai vienreiz. Nepieciešams loģiskais operators, kas sekos tam vai dati ienāk iekšā vai arī nē
+
+def xStop():
+    if not keyboard.is_pressed("w") and not keyboard.is_pressed("s") and keyCheck[0] == 0:
+        clientsocket.send(bytes("<00>", "utf-8"))
+
+def yStop():
+    if not keyboard.is_pressed("d") and not keyboard.is_pressed("a") and keyCheck[3] == 0:
+        clientsocket.send(bytes("<10>", "utf-8"))
+
 def forward():
     if keyboard.is_pressed("w") and not keyboard.is_pressed("s") and keyCheck[0] == 0:
         keyCheck[0] = 1
-        print("w")
+        clientsocket.send(bytes("<02>", "utf-8"))
     elif not keyboard.is_pressed("w") and keyCheck[0] == 1:
         keyCheck[0] = 0
-        print("no w")
+        xStop()
 
 def backward():
     if keyboard.is_pressed("s") and not keyboard.is_pressed("w") and keyCheck[2] == 0:
         keyCheck[2] = 1
-        print("s")
+        clientsocket.send(bytes("<01>", "utf-8"))
     elif not keyboard.is_pressed("s") and keyCheck[2] == 1:
         keyCheck[2] = 0
-        print("no s")
+        xStop()
 
 def left():
     if keyboard.is_pressed("d") and not keyboard.is_pressed("a") and keyCheck[3] == 0:
         keyCheck[3] = 1
-        print("d")
+        clientsocket.send(bytes("<11>", "utf-8"))
     elif not keyboard.is_pressed("d") and keyCheck[3] == 1:
         keyCheck[3] = 0
-        print("no d")
+        yStop()
 
 def right():
     if keyboard.is_pressed("a") and not keyboard.is_pressed("d") and keyCheck[1] == 0:
         keyCheck[1] = 1
-        print("a")
+        clientsocket.send(bytes("<12>", "utf-8"))
     elif not keyboard.is_pressed("a") and keyCheck[1] == 1:
         keyCheck[1] = 0
-        print("no a")
+        yStop()
 
 def audio():
     if keyboard.is_pressed("t") and keyCheck[4] == 0:
         while keyboard.is_pressed("t"):
             True
         keyCheck[4] = 1
-        print("audio on")
+        clientsocket.send(bytes("<31>", "utf-8"))
     elif keyboard.is_pressed("t") and keyCheck[4] == 1:
         while keyboard.is_pressed("t"):
             True
         keyCheck[4] = 0
-        print("audio off")
+        clientsocket.send(bytes("<30>", "utf-8"))
 
 def frontLed():
     if keyboard.is_pressed("e") and not keyboard.is_pressed("f") and keyCheck[5] == 0:
         keyCheck[5] = 1
-        print("e")
+        clientsocket.send(bytes("<21>", "utf-8"))
     elif not keyboard.is_pressed("e") and keyCheck[5] == 1:
         keyCheck[5] = 0
-        print("test frontLed not pressed")
 
 def backLed():
     if keyboard.is_pressed("r") and not keyboard.is_pressed("f") and keyCheck[6] == 0:
         keyCheck[6] = 1
-        print("r")
+        clientsocket.send(bytes("<22>", "utf-8"))
     elif not keyboard.is_pressed("r") and keyCheck[6] == 1:
         keyCheck[6] = 0
-        print("test backLed not pressed")
 
 
 def offLed():
     if keyboard.is_pressed("f") and not keyboard.is_pressed("r") and keyCheck[7] == 0 and not keyboard.is_pressed("e"):
         keyCheck[7] = 1
-        print("f")
+        clientsocket.send(bytes("<20>", "utf-8"))
     elif not keyboard.is_pressed("f") and keyCheck[7] == 1:
         keyCheck[7] = 0
-        print("test offLed not pressed")
 
 
 def recData():
     if keyboard.is_pressed("c") and keyCheck[8] == 0:
         keyCheck[8] = 1
-        print("c")
+        clientsocket.send(bytes("<40>", "utf-8"))
     elif not keyboard.is_pressed("c") and keyCheck[8] == 1:
         keyCheck[8] = 0
-        print("no recData")
 
-while True: # cikls atkārtojas mūžīgi
+def keyboardListener():
     forward()
     backward()
     left()
@@ -108,9 +131,9 @@ while True: # cikls atkārtojas mūžīgi
     offLed()
     recData()
 
-""""
-NEPIECIEŠAMĀS KEYBOARD BIBLIOTĒKAS DAĻAS
+while True: # cikls atkārtojas mūžīgi
+    keyboardListener()
+    
+    
 
-keyboard.is_pressed("a")
 
-"""    
