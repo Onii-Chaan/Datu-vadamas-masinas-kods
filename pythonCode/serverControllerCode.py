@@ -4,8 +4,8 @@ import socket
 print("start")
 
 listensocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-Port = 8000
-maxConnections = 1
+Port = 1060
+maxConnections = 5
 IP = socket.gethostname()
 
 listensocket.bind((socket.gethostname(), Port))
