@@ -3,7 +3,7 @@ from serial import Serial
 
 print("start")
 
-ser = Serial('COM5', baudrate = 9600, timeout =1)
+ser = Serial('COM3', baudrate = 9600, timeout =1)
 
 #recMessage = clientsocket.recv(1024).decode()
 
@@ -55,7 +55,7 @@ def backward():
 def left():
     if keyboard.is_pressed("d") and not keyboard.is_pressed("a") and keyCheck[3] == 0:
         keyCheck[3] = 1
-        ser.write(bytes("<11>", "utf-8"))
+        ser.write(bytes("<12>", "utf-8"))
     elif not keyboard.is_pressed("d") and keyCheck[3] == 1:
         keyCheck[3] = 0
         yStop()
@@ -63,7 +63,7 @@ def left():
 def right():
     if keyboard.is_pressed("a") and not keyboard.is_pressed("d") and keyCheck[1] == 0:
         keyCheck[1] = 1
-        ser.write(bytes("<12>", "utf-8"))
+        ser.write(bytes("<11>", "utf-8"))
     elif not keyboard.is_pressed("a") and keyCheck[1] == 1:
         keyCheck[1] = 0
         yStop()
