@@ -1,5 +1,5 @@
 # Wireless-car
-This project is incomplete and have not been completely built/tested!
+```This project is incomplete and have not been completely built/tested!```
 # Table of contents
 - [About]()
     - [Usage]()
@@ -14,7 +14,7 @@ This project is incomplete and have not been completely built/tested!
 - [Problems]()
     - [Wireless network]() 
     - [Motor driver IC]()
-    - [Completion of project]()
+- [Completion of project]()
 - [Schematic]()
 
 # About
@@ -58,12 +58,23 @@ Atmega chip uses UART communication with HC-05 bluetooth module and reads incomi
 - ```<20>```, ```<21>```, ```<22>``` turn off lights, turn on front lights, turn on back lights 
 - ```<30>```, ```<31>``` nothing is played, siren is played
 - ```<40>``` request data from car 
-
-
+# Classes and methods
+- ```audioVcc::loop()``` powers LM audio amplifier if audio needs to be played
+- ```BTdata::loop()``` listens, processes incoming data and stores it
+- ```carLights::turnLights(byte lightState)``` turns on/off car lights
+- ```carControl::driveCar(byte mainMotor, byte turnMotor, byte prevTurnMotorVal)``` controlls all motors
+- ```gyroData::readAcc()``` reads data from gyroscope and measures battery voltage
 # Problems
+This project has not been completed. Main problems were with hardware, because THT chip got heated up too much. After building my own H bridge circuit for motor driving, it didn't work and I had too little time to find out the root of the problem. 
+
 ## Wireless network
+There are difficulities with connecting phone to wireless network. It will work just fine on local network, but I couldn't manage it to work using internet and phone mobile data. One of the reasons was that phone doesn't use static IP address.  
+
 ## Motor driver IC
-## 
+As I said previously L293D THT chip got heated up too much. I put radiator for cooling, but it too got heated up too much. I were not be able to put bigger radiator because there were not that many space left and it made the car heavier causing more current and heat to generate.
+
+## Completion of project
+The car do work, although because of motor driver IC heat problem it stops driving after some minutes. I will finish this project someday with SMD PCB, better motor driver IC and better code.  
 
 # Schematic
 ![Schematic](https://i.ibb.co/cNR4Rs0/car-scheme.png)
