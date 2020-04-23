@@ -1,21 +1,22 @@
 # Wireless-car
 ```This project is incomplete and have not been completely built/tested!```
 # Table of contents
-- [About]()
-    - [Usage]()
-- [Setup]()
-- [Libraries Used]()
-    - [Python]()
-    - [Additional Software]()
-- [Hardware]()
-- [Code]()
-    - [Python code]()
-    - [Hardware code]()
-- [Problems]()
-    - [Wireless network]() 
-    - [Motor driver IC]()
-- [Completion of project]()
-- [Schematic]()
+- [About](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#about)
+    - [Usage](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#usage)
+- [Setup](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#setup)
+- [Libraries Used](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#libraries-used)
+    - [Python](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#python)
+    - [Additional Software](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#additional-software)
+- [Hardware](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#hardware)
+- [Code](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#code)
+    - [Python code](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#python-code)
+    - [Hardware code](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#hardware-code)
+    - [Classes and methods](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#classes-and-methods)
+- [Problems](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#problems)
+    - [Wireless network](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#wireless-network) 
+    - [Motor driver IC](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#motor-driver-ic)
+- [Completion of project](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#completion-of-project)
+- [Schematic](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#schematic)
 
 # About
 This is circuit and code made for controlling RC car using wireless network by sitting at your PC and pressing simple W A S D keys for driving. 
