@@ -1,5 +1,5 @@
 # Wireless-car
-```This project is incomplete and have not been completely built/tested!```
+
 # Table of contents
 - [About](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#about)
     - [Usage](https://github.com/Onii-Chaan/Datu-vadamas-masinas-kods/blob/master/README.md#usage)
